@@ -21,9 +21,10 @@ public class Unit : MonoBehaviour
 
     void Start()
     {
-        
-
-
+        // Set firing point location.
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        Vector2 spriteSize = spriteRenderer.sprite.bounds.size;
+        firingPoint.transform.position += new Vector3(spriteSize.x, 0);
     }
 
     // Update is called once per frame
@@ -41,25 +42,7 @@ public class Unit : MonoBehaviour
 
     public GameObject Shoot()
     {
-        Debug.Log("Current Location: " + transform.position.ToString());
-
-
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        Vector2 spriteSize = spriteRenderer.sprite.bounds.size;
-        Vector3 bulletSpawnPoint = GameController.GetPositionFromAngle(LookAngle);
-        Vector3 bSP2 = transform.position + bulletSpawnPoint - (Vector3)spriteSize;
-
-
-        var bullet = Instantiate(prefabBullet, bSP2, Quaternion.identity); ;
-        Debug.Log("Bullet Spawn Location: " + bullet.transform.position.ToString());
-        bullet.GetComponent<Rigidbody2D>().AddForce(bullet.transform.up *  moveSpeed, ForceMode2D.Impulse);
+        var bullet = Instantiate(prefabBullet, firingPoint.transform.position, transform.rotation); ;
         return bullet;
-    }
-
-    private void UpdateFiringPoint()
-    {
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        Vector2 spriteSize = spriteRenderer.sprite.bounds.size;
-        //firingPoint.transform.position = new Vector2(transform.forward.x + spriteSize.x, transform.position.y);
     }
 }

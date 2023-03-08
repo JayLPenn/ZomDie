@@ -1,14 +1,21 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class GameController : MonoBehaviour
 {
     public Camera gameCamera;
+    public GameObject worldLight;
     public GameObject prefabUnit;
     public GameObject prefabBuilding;
     public GameObject playerUnit;
+
+    public DateTime currentTime;
+
+    private string ipAddress;
 
     public void PlayerInput()
     {
@@ -32,6 +39,8 @@ public class GameController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        SetTimeToCurrent();
+
         playerUnit = Instantiate(prefabUnit, new Vector3(2, 2, 0), Quaternion.identity);
         GenerateBuilding(new Vector2(0, 0), new Vector2(3, 34));
     }
@@ -39,13 +48,28 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        SetTimeToCurrent();
+
         PlayerInput();
         gameCamera.GetComponent<GameCamera>().ChangePosition(new Vector3(playerUnit.transform.position.x, playerUnit.transform.position.y, -10));
+    }
+
+    void SetTimeToCurrent()
+    {
+        currentTime = DateTime.Now;
     }
 
     void GenerateBuilding(Vector3 location, Vector2 size)
     {
         GameObject building = Instantiate(prefabBuilding, location, Quaternion.identity);
+    }
+
+    private void GetIP()
+    {
+        var website = new UnityWebRequest("http://bot.whatismyipaddress.com/")
+        {
+            downloadHandler = new DownloadHandlerBuffer()
+        };
     }
 
     // Converts and angle into a Vector3.
