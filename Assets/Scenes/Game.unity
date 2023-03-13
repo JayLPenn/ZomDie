@@ -7902,15 +7902,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cc6c8f09edccd141b6c2029aaaee60f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameController: {fileID: 0}
-  gameCanvas: {fileID: 1985337675}
   pauseCanvas: {fileID: 336312227}
-  weatherAutomaticDropdown: {fileID: 1419055075}
-  latitudeInput: {fileID: 719261549}
-  longitudeInput: {fileID: 450056142}
-  weatherTypeDropdown: {fileID: 2080756198}
-  windSpeedInput: {fileID: 1612458323}
-  windDegreeInput: {fileID: 676826410}
 --- !u!1 &1027104816
 GameObject:
   m_ObjectHideFlags: 0

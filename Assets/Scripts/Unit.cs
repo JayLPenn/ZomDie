@@ -42,7 +42,8 @@ public class Unit : MonoBehaviour
 
     public GameObject Shoot()
     {
-        var bullet = Instantiate(prefabBullet, firingPoint.transform.position, transform.rotation); ;
+        GameObject bullet = Instantiate(prefabBullet, firingPoint.transform.position, transform.rotation);
+        bullet.GetComponent<Bullet>().shooter = gameObject;
         return bullet;
     }
 }

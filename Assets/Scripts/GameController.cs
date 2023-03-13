@@ -5,7 +5,6 @@ using Unity.VisualScripting;
 using Unity.VisualScripting.ReorderableList;
 using UnityEngine;
 using UnityEngine.Networking;
-using SimpleJSON;
 using UnityEngine.Android;
 
 public class GameController : MonoBehaviour
@@ -20,6 +19,7 @@ public class GameController : MonoBehaviour
     public GameObject prefabUnit;
     public GameObject prefabBuilding;
     public GameObject playerUnit;
+    public WeatherInformation weatherInformation;
 
     public bool gamePaused = false;
 
@@ -29,7 +29,6 @@ public class GameController : MonoBehaviour
     private string ipAddress;
 
     public string weatherRaw;
-    public JSONNode weatherInformation;
     public int latitude;
     public int longitude;
     public WeatherType weatherType;
@@ -71,7 +70,6 @@ public class GameController : MonoBehaviour
     {
         guiController = GameObject.Find("GUIController").GetComponent<GUIController>();
         cloudShaderMaterial = cloudShader.GetComponent<SpriteRenderer>().material;
-        Debug.Log(cloudShaderMaterial.GetFloat("cloudSize"));
         rainEmissionParticleSystem = rainEmission.GetComponent<ParticleSystem>();
 
         SetTimeToCurrent();
@@ -97,7 +95,6 @@ public class GameController : MonoBehaviour
             {
                 gamePaused = true;
                 guiController.TogglePauseCanvas(true);
-                guiController.GetPauseMenuValues(); // Sets the values to current values.
             }
         }
 
@@ -142,7 +139,6 @@ public class GameController : MonoBehaviour
 
     IEnumerator GetWeather()
     {
-        //string webAddress = $"https://api.openweathermap.org/data/2.5/weather?lat={0}&lon={1}&appid=3e8ac582f21905a8fc97a11db83021b7", latitude, longitude;
         string webAddress = "https://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&appid=3e8ac582f21905a8fc97a11db83021b7";
         UnityWebRequest website = UnityWebRequest.Get(webAddress);
 
@@ -156,15 +152,15 @@ public class GameController : MonoBehaviour
         else
         {
             weatherRaw = website.downloadHandler.text;
-            //Debug.Log(weatherRaw);
         }
     }
 
     void SetWeatherAutomatic()
     {
-        weatherInformation = JSON.Parse(weatherRaw);
-        var coord = weatherInformation["coord"];
-        Debug.Log(coord);
+        weatherInformation = JsonUtility.FromJson<WeatherInformation>(weatherRaw);
+        Debug.Log(weatherInformation.coord);
+        //var coord = weatherInformation["coord"];
+        //Debug.Log(coord);
     }
 
     public void AdjustLatitude(string newLat)
@@ -182,8 +178,6 @@ public class GameController : MonoBehaviour
         var pSE = rainEmissionParticleSystem.emission;
         weatherType = (WeatherType)newState;
 
-        MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
-
         switch (weatherType)
         {
             case WeatherType.Sunny:
@@ -193,28 +187,25 @@ public class GameController : MonoBehaviour
             case WeatherType.Overcast:
                 rainEmission.SetActive(false);
                 cloudShader.SetActive(true);
-                materialPropertyBlock.SetFloat("cloudSize", 1);
-                cloudShader.GetComponent<SpriteRenderer>().SetPropertyBlock(materialPropertyBlock);
+                cloudShaderMaterial.SetFloat("_cloudSize", 1f);
                 break;
             case WeatherType.Drizzling:
                 rainEmission.SetActive(true);
                 cloudShader.SetActive(true);
                 pSE.rateOverTime = 200;
-                materialPropertyBlock.SetFloat("cloudSize", 1);
-                cloudShader.GetComponent<SpriteRenderer>().SetPropertyBlock(materialPropertyBlock);
+                cloudShaderMaterial.SetFloat("_cloudSize", 1f);
                 break;
             case WeatherType.Raining:
                 rainEmission.SetActive(true);
                 cloudShader.SetActive(true);
                 pSE.rateOverTime = 2000;
-                cloudShaderMaterial.SetFloat("cloudSize", 2);
+                cloudShaderMaterial.SetFloat("_cloudSize", 0.5f);
                 break;
             case WeatherType.Thunderstorm:
                 rainEmission.SetActive(true);
                 cloudShader.SetActive(true);
                 pSE.rateOverTime = 5000;
-                materialPropertyBlock.SetFloat("cloudSize", 3);
-                cloudShader.GetComponent<SpriteRenderer>().SetPropertyBlock(materialPropertyBlock);
+                cloudShaderMaterial.SetFloat("_cloudSize", 0.25f);
                 break;
             default: break;
         }
@@ -226,10 +217,14 @@ public class GameController : MonoBehaviour
         var pSForce = rainEmissionParticleSystem.forceOverLifetime;
 
         // Change force depending upon direction.
-        if (weatherWindDegrees<= 180)    // Wind is coming from east.
-            pSForce.x = -weatherWindSpeed * 100;
-        else    // Wind is coming from west.
-            pSForce.x = weatherWindSpeed * 100;
+        if (weatherWindDegrees <= 180)
+        {    // Wind is coming from east.
+            pSForce.x = -weatherWindSpeed * 10;
+        }
+        else
+        {    // Wind is coming from west.
+            pSForce.x = weatherWindSpeed * 10;
+        }
     }
     public void AdjustWeatherWindDegrees(float newDegrees)
     {
